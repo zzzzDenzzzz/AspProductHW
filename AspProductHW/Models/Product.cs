@@ -1,6 +1,6 @@
 ﻿namespace AspProductHW.Models
 {
-    public record Product
+    public class Product
     {
         public required int Id { get; set; }
 

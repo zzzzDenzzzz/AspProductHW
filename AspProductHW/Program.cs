@@ -6,16 +6,27 @@ var app = builder.Build();
 
 app.MapGet("/", () => Products);
 
-app.MapPost("/addProduct", (Product product) =>
+// RPC "/addProduct", (Product product) =>
+app.MapPost("/add", (Product product) =>
 {
     Products.Add(product);
     return Results.Created("/", Products);
 });
 
-app.MapGet("/getProductByName", (string name) => Products.FindAll(p => p.Name == name));
-app.MapGet("/getProductById", (int id) => Products.Find(p => p.Id == id));
+app.MapPost("/add/product/{id}/{name}/{brand}/{price}", (int id, string name, string brand, decimal price) =>
+{
+    var product = new Product() { Id = id, Name = name, Brand = brand, Price = price};
+    Products.Add(product);
+    return Results.Created("/", Products);
+});
 
-app.MapDelete("/deleteProductById", (int id) =>
+// RPC "/getProductByName", (string name) => Products.FindAll(p => p.Name == name));
+app.MapGet("/get/name/{name}", (string name) => Products.FindAll(p => p.Name == name));
+// RPC "/getProductById", (int id) => Products.Find(p => p.Id == id));
+app.MapGet("/get/id/{id}", (int id) => Products.Find(p => p.Id == id));
+
+//RPC "/deleteProductById", (int id) =>
+app.MapDelete("/delete/id/{id}", (int id) =>
 {
     var product = Products.Where(p => p.Id == id).FirstOrDefault();
 
@@ -24,9 +35,11 @@ app.MapDelete("/deleteProductById", (int id) =>
     Products.Remove(product);
     return Results.NoContent();
 });
-app.MapDelete("/deleteAll", () => Products.Clear());
+// RPC "/deleteAll"
+app.MapDelete("/delete", () => Products.Clear());
 
-app.MapPut("/updateProductById", (int id, Product newProduct) =>
+// RPC "/updateProductByID", (int id, Product newProduct) =>
+app.MapPut("/update/id/{id}", (int id, Product newProduct) =>
 {
     var product = Products.Where(p => p.Id == id).FirstOrDefault();
 
