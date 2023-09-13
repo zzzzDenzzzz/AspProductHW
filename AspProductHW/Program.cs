@@ -6,27 +6,15 @@ var app = builder.Build();
 
 app.MapGet("/", () => Products);
 
-// RPC "/addProduct", (Product product) =>
-app.MapPost("/add", (Product product) =>
+// REST
+app.MapPost("/product", (Product product) =>
 {
     Products.Add(product);
     return Results.Created("/", Products);
 });
-
-app.MapPost("/add/product/{id}/{name}/{brand}/{price}", (int id, string name, string brand, decimal price) =>
-{
-    var product = new Product() { Id = id, Name = name, Brand = brand, Price = price};
-    Products.Add(product);
-    return Results.Created("/", Products);
-});
-
-// RPC "/getProductByName", (string name) => Products.FindAll(p => p.Name == name));
-app.MapGet("/get/name/{name}", (string name) => Products.FindAll(p => p.Name == name));
-// RPC "/getProductById", (int id) => Products.Find(p => p.Id == id));
-app.MapGet("/get/id/{id}", (int id) => Products.Find(p => p.Id == id));
-
-//RPC "/deleteProductById", (int id) =>
-app.MapDelete("/delete/id/{id}", (int id) =>
+app.MapGet("/product/name/{name}", (string name) => Products.FindAll(p => p.Name == name));
+app.MapGet("/product/{id}", (int id) => Products.Find(p => p.Id == id));
+app.MapDelete("/product/{id}", (int id) =>
 {
     var product = Products.Where(p => p.Id == id).FirstOrDefault();
 
@@ -35,11 +23,40 @@ app.MapDelete("/delete/id/{id}", (int id) =>
     Products.Remove(product);
     return Results.NoContent();
 });
-// RPC "/deleteAll"
-app.MapDelete("/delete", () => Products.Clear());
+app.MapDelete("/product", () => Products.Clear());
+app.MapPut("/product/{id}", (int id, Product newProduct) =>
+{
+    var product = Products.Where(p => p.Id == id).FirstOrDefault();
 
-// RPC "/updateProductByID", (int id, Product newProduct) =>
-app.MapPut("/update/id/{id}", (int id, Product newProduct) =>
+    if (product is null) return Results.NotFound();
+
+    product.Id = newProduct.Id;
+    product.Name = newProduct.Name;
+    product.Brand = newProduct.Brand;
+    product.Price = newProduct.Price;
+
+    return Results.NoContent();
+});
+
+// RPC
+app.MapPost("/addProduct", (Product product) =>
+{
+    Products.Add(product);
+    return Results.Created("/", Products);
+});
+app.MapGet("/getProductByName", (string name) => Products.FindAll(p => p.Name == name));
+app.MapGet("/getProductById", (int id) => Products.Find(p => p.Id == id));
+app.MapPost("deleteProductById", (int id) =>
+{
+    var product = Products.Where(p => p.Id == id).FirstOrDefault();
+
+    if (product is null) return Results.NotFound();
+
+    Products.Remove(product);
+    return Results.NoContent();
+});
+app.MapPost("/deleteProducts", () => Products.Clear());
+app.MapPost("/updateProductById", (int id, Product newProduct) =>
 {
     var product = Products.Where(p => p.Id == id).FirstOrDefault();
 
